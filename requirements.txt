@@ -1,0 +1,15 @@
+# Versions the reported results were produced with (Python 3.13.5).
+# Nothing here is exotic; nearby versions should work, but NumPy >= 2.0 is
+# required — the tree split threshold is cast with np.float64 explicitly to
+# avoid the NEP-50 float32 down-cast that silently collapses thresholds onto
+# adjacent feature values.
+numpy==2.1.3
+pandas==2.2.3
+scipy==1.15.3
+joblib==1.4.2
+matplotlib==3.10.0
+openpyxl==3.1.5
+
+# Needed only by classic_final.py (the tree baselines).
+scikit-learn==1.6.1
+xgboost==3.3.0
