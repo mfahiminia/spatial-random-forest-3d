@@ -12,7 +12,7 @@ type: software
 license: MIT
 version: "1.0.1"
 date-released: "2026-08-23"
-doi: 10.5281/zenodo.22067693
+doi: 10.5281/zenodo.22069198 
 repository-code: "https://github.com/mfahiminia/spatial-random-forest-3d"
 authors:
   - family-names: Fahiminia
