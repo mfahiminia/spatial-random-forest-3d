@@ -389,8 +389,8 @@ schema and spatial structure, so the complete workflow can be run without them.
 
 Citation metadata are in [`CITATION.cff`](CITATION.cff); GitHub's "Cite this
 repository" button reads it. Archived releases carry a DOI:
-[10.5281/zenodo.22067693](https://doi.org/10.5281/zenodo.22067693). Please cite
-the accompanying manuscript as well, and Talebi et al. (2021) for the original
-SRF formulation.
+[10.5281/zenodo.22067693](https://doi.org/10.5281/zenodo.22069198). Please cite
+the accompanying manuscript as well,Saha et al., 2023 and Talebi et al. (2021) for the original
+SRF and GLS-RF formulation.
 
 The code is available under the MIT License; see [`LICENSE`](LICENSE).
