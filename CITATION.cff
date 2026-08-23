@@ -1,9 +1,26 @@
-cff-version: 1.1.0
+cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
+title: "Spatial Random Forests in 3D: SRF, GLS-RF and tree baselines under spatial block cross-validation"
+abstract: >-
+  Reference implementation of a 3D voxel-kernel spatial random forest (SRF_3D)
+  and an anisotropic RF-GLS (GLS-RF_3D) for mineral resource estimation,
+  together with the spatial block cross-validation design under which they and
+  the tree baselines are evaluated, the design ablation, and the hyperparameter
+  sensitivity analysis. A synthetic dataset generator is included so the full
+  workflow runs without the proprietary case-study data.
+type: software
+license: MIT
+version: "1.0.1"
+date-released: "2026-08-23"
+doi: 10.5281/zenodo.22067693
+repository-code: "https://github.com/mfahiminia/spatial-random-forest-3d"
 authors:
-- family-names: Fahiminia
-  given-names: Mohammad
-DOI: 10.5281/zenodo.22067693 
-title: Spatial random forest 3D
-version: V1.0.0
-date-released: 2026-08-23
+  - family-names: Fahiminia
+    given-names: Mohammad
+keywords:
+  - spatial random forest
+  - geostatistics
+  - spatial cross-validation
+  - mineral resource estimation
+  - geometallurgy
+  - block model

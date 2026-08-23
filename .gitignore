@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+
+# ---------------------------------------------------------------
+# DATA IS NOT PUBLISHED. Everything below is either the case-study
+# data or regenerable output. Keep these rules: they are what stops
+# a stray `git add -A` from committing the deposit data.
+# ---------------------------------------------------------------
+Vector/
+CV_folds/
+data_classic.xlsx
+*.xlsx
+*.csv
+*.npy
+*.dm
+
+# Run outputs
+SRF_runs/
+SRF_Ablation/
+SRF_Sensitivity/
+GLSRF_runs/
+Classic_runs/

@@ -1,0 +1,8 @@
+# Normalise line endings so the repo does not appear wholly modified when it is
+# cloned on a different platform.
+* text=auto eol=lf
+
+*.png binary
+*.pdf binary
+*.npy binary
+*.xlsx binary
