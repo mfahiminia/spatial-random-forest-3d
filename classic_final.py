@@ -138,8 +138,6 @@ def resolve_data_path():
                 f"The folds were built from {src}, which no longer exists, and "
                 f"there is no {src.name} under {PROJECT_ROOT}.")
         src = local
-    print(f"[data resolved from fold_config.json] {src.name} "
-          f"({ds['n_samples']} samples, built {cfg['created_at'][:19]})")
     return src
 
 

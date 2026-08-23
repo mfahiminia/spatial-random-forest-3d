@@ -1,11 +1,47 @@
 # 3D Spatial Random Forest Workflows
 
-Python scripts for preparing 3D voxel features, creating spatial folds, training
-SRF and GLS-RF models, predicting a block model, and running tree baselines.
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22067693.svg)](https://doi.org/10.5281/zenodo.22067693)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+Code accompanying a manuscript on spatially explicit machine learning for
+geometallurgical block modelling. It implements two spatially aware learners and
+evaluates them, together with conventional tree ensembles, under a single
+spatial block cross-validation design that every method shares unchanged.
+
+| Method | Where spatial information enters |
+| --- | --- |
+| `SRF_3D` | the **representation** — each sample becomes a k x k x k voxel pattern |
+| `GLS-RF_3D` | the **estimator** — split criterion and node values become generalised least squares under an oriented covariance |
+| `RF + XYZ` | the **feature space** — coordinates appended as ordinary predictors |
+| `RF`, bagged trees, `GBM`, `XGBoost` | nowhere — the non-spatial baselines |
+
+SRF_3D extends Talebi et al. (2021), *A Truly Spatial Random Forests Algorithm
+for Geoscience Data Analysis and Modelling*, Mathematical Geosciences, from 2D
+pixel neighbourhoods to 3D voxel kernels. GLS-RF_3D follows Saha, Basu & Datta
+(2023), *Random Forests for Spatially Dependent Data*, JASA, with an anisotropic
+covariance.
 
 The case-study data are not included. A synthetic dataset is provided so the
 workflow can be tested from start to finish. See [`DATA.md`](DATA.md) for the
 required input schema and [`USAGE.md`](USAGE.md) for detailed troubleshooting.
+
+## Reported results
+
+Pooled spatial cross-validation on the common 456-node support: every sample
+predicted exactly once, by a model that never saw its spatial neighbourhood.
+
+| Method | DTR R2 | DTR RMSE | Magnetic R2 | Magnetic RMSE |
+| --- | --- | --- | --- | --- |
+| GLS-RF_3D | **0.635** | **15.19** | **0.689** | **14.45** |
+| RF + XYZ | 0.625 | 15.39 | 0.657 | 15.18 |
+| Ordinary RF | 0.622 | 15.45 | 0.671 | 14.86 |
+| SRF_3D | 0.601 | 15.87 | 0.666 | 14.99 |
+| XGBoost | 0.586 | 16.17 | 0.660 | 15.13 |
+
+Scored under out-of-bag error instead, as in the original SRF formulation,
+SRF_3D reaches R2 0.815 and 0.814 — the highest in the study, and an optimism of
++0.215 and +0.148 over the honest spatial-CV figures above. That gap is the
+reason the evaluation design matters more than the choice of learner.
 
 ## Installation
 
@@ -279,6 +315,54 @@ Edit `PATTERN`, `KERNEL`, `N_JOBS`, `N_EST_FIXED`, `SWEEP`, and
 python srf_sensitivity.py
 ```
 
+## Reproducing the manuscript
+
+Each numbered result maps to one script. Run them in this order; every step
+after the first two consumes the outputs of the earlier ones.
+
+| Manuscript item | Script |
+| --- | --- |
+| Table 1 — configurations and search spaces | `srf_train.py`, `GLSRF.py` |
+| Table 2 — covariance design ranking | `glsrf_report.py` |
+| Table 3 — GLS-RF out-of-bag vs test | `glsrf_report.py` |
+| Figure 3 — GLS-RF design choices | `GLSRF_figures.py` |
+| Table 4 — SRF design selection | `srf_ablation_run.py` |
+| Section 3.4 — noise floor, search-space screening | `srf_sensitivity.py` |
+| Table 5 — five methods, common support | `compare_methods.py` |
+| Table 6 — distributional fidelity | `distributional_fidelity.py` |
+| Table 7 — domain continuity at P65 | `spatial_coherence.py`, then `coherence_figure.py` |
+| Table 8, Figure 4 — salt-and-pepper by 27-block support | `class_coherence.py` |
+| Table S1 — continuity sensitivity | `coherence_sensitivity.py` |
+| Figures 5, 6 — deployed block-model sections | `deploy_all_methods.py` |
+| Methodology schematic | `methodology_figure.py` |
+
+Full order:
+
+```bash
+python build_voxels.py
+python make_folds.py
+
+python srf_train.py                  # SRF_3D spatial CV
+python GLSRF.py                      # GLS-RF_3D design + hyperparameter search
+python glsrf_report.py               # the reported GLS-RF estimator
+python classic_final.py              # the tree baselines
+
+python compare_methods.py            # Table 5
+python distributional_fidelity.py    # Table 6
+
+python save_best_configs.py          # freeze the selected configurations
+python deploy_all_methods.py         # deployed block model, all methods
+python spatial_coherence.py          # connectivity and spikes
+python class_coherence.py            # Table 8, Figure 4
+python coherence_sensitivity.py      # Table S1
+python coherence_figure.py           # Table 7 and the coherence figure
+```
+
+`compare_methods.py` resolves the newest run of each method automatically and
+refuses to compute anything unless the three runs share a fold fingerprint, the
+coordinate join is one-to-one within 0.5 m, and the folds agree for every
+sample. Pass three run folders as arguments to pin specific runs instead.
+
 ## Output folders
 
 | Script | Main output |
@@ -293,10 +377,20 @@ python srf_sensitivity.py
 | `srf_ablation_run.py` | `SRF_Ablation/` |
 | `srf_sensitivity.py` | `SRF_Sensitivity/` |
 
+## Data availability
+
+The drillhole and block-model data of the case study are proprietary to the mine
+operator and are not redistributed here. They are available from the
+corresponding author on reasonable request, subject to the operator's
+permission. `make_demo_data.py` generates a synthetic dataset with the same
+schema and spatial structure, so the complete workflow can be run without them.
+
 ## Citation and license
 
-Citation metadata are stored in [`CITATION.cff`](CITATION.cff). Complete its
-release URL, author information, and publication fields before creating the
-public release.
+Citation metadata are in [`CITATION.cff`](CITATION.cff); GitHub's "Cite this
+repository" button reads it. Archived releases carry a DOI:
+[10.5281/zenodo.22067693](https://doi.org/10.5281/zenodo.22067693). Please cite
+the accompanying manuscript as well, and Talebi et al. (2021) for the original
+SRF formulation.
 
 The code is available under the MIT License; see [`LICENSE`](LICENSE).

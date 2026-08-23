@@ -8,6 +8,7 @@ the pipeline is built this way; this file is the operating manual.
 - [2. Quick start](#2-quick-start)
 - [3. Where the files live](#3-where-the-files-live)
 - [4. The steps in detail](#4-the-steps-in-detail)
+- [4b. Analysis and deployment](#step-9--compare_methodspy)
 - [5. Running on your own data](#5-running-on-your-own-data)
 - [6. Full runs vs `--smoke`](#6-full-runs-vs---smoke)
 - [7. Reproducibility rules](#7-reproducibility-rules)
@@ -271,6 +272,95 @@ so the two selection criteria can be compared on identical models.
 
 `paired_tests.csv` holds the Wilcoxon comparisons on per-sample squared errors;
 `oob_vs_cv.csv` shows what each selection criterion chose and what it cost.
+
+### Step 9 — `compare_methods.py`
+
+Puts every method on one footing. The tree baselines and GLS-RF are fitted on
+the 551-sample point table; SRF needs a k^3 window and has 456. Comparing a
+551-row metric against a 456-row one measures support, not method, so two tables
+are written: each method on its native support, and every method restricted to
+the common 456.
+
+| | |
+| --- | --- |
+| Reads | the newest `Classic_runs/TREES_*`, `GLSRF_runs/GLSRF_*` and `SRF_runs/SRF_run_*` |
+| Writes | `Comparison/compare_{common,full,perfold,paired}.csv`, `compare_common_long.csv`, `fig_method_comparison.png` |
+| Time | seconds |
+
+The runs are resolved automatically rather than hard-coded, because a stale path
+here is invisible — it produces a complete, plausible table computed on folds
+that no longer exist. Three guards run before any metric is computed: the runs
+must share a fold fingerprint, the coordinate join must be one-to-one within
+0.5 m, and the folds must agree for every joined sample. Pass three run folders
+as command-line arguments to pin specific runs.
+
+The 0.5 m tolerance is not arbitrary. Voxel centres are float32, so a genuine
+pair sits 0.12–0.25 m apart, while the next block up is 2.0 m away in z and
+carries a completely different grade. A tolerance loose enough to absorb the
+rounding is also loose enough to grab the wrong block.
+
+### Step 10 — `distributional_fidelity.py`
+
+Point accuracy says how close each prediction is; it says nothing about whether
+the predicted *population* resembles the sampled one. Reports the smoothing
+ratio var(pred)/var(obs), the conditional-bias slope, the KS statistic as an
+effect size, and the tail quantile errors that drive cut-off decisions.
+
+| | |
+| --- | --- |
+| Reads | `Comparison/compare_common_long.csv` |
+| Writes | `Distributional/dist_metrics.csv`, `selectivity.csv`, `fig_distributional_fidelity.png` |
+| Time | seconds |
+
+### Step 11 — `save_best_configs.py` and `deploy_all_methods.py`
+
+Cross-validation measures generalisation; the product a mine uses is the
+deployed map. `save_best_configs.py` freezes each method's CV-selected
+configuration into `best_configs.json`; `deploy_all_methods.py` refits every
+method on all of its training data at that configuration and predicts every
+block-model node, into one file on one common node support.
+
+| | |
+| --- | --- |
+| Reads | `best_configs.json`, the run folders, `Vector/` |
+| Writes | `BlockModel/block_predictions_all.csv`, `block_deploy_config.json` |
+| Time | under a minute |
+
+### Step 12 — the coherence diagnostics
+
+A model can reproduce the histogram and the variogram and still be
+geologically implausible, because both are averages. These scripts measure what
+a mine planner actually sees: isolated blocks disagreeing with their
+neighbours, and ore breaking into pieces too small to extract.
+
+```bash
+python spatial_coherence.py        # connectivity at cut-off, spike index
+python class_coherence.py          # salt-and-pepper by 27-block support
+python coherence_sensitivity.py    # is the ranking stable in the parameters?
+python coherence_figure.py         # the paper tables and figure
+```
+
+All four read `BlockModel/block_predictions_all.csv` and write into
+`BlockModel/Coherence/`. `coherence_figure.py` must run last: it consumes
+`connectivity.csv` and `spikes.csv` so that the figure and the manuscript tables
+cannot drift apart from the console log. Each takes seconds to a couple of
+minutes.
+
+`class_coherence.py` separates specks from boundaries by counting how many of a
+block's 27 neighbours share its class. A block with support below 5 is a speck;
+support around 10–14 means it sits on a domain boundary, which is ordinary
+geology and not a defect. A plain "differs from the neighbourhood mode" test
+cannot make that distinction — it flags every boundary block too, and boundary
+blocks vastly outnumber specks, so it ends up measuring surface area.
+
+### Step 13 — `methodology_figure.py`
+
+The schematic of where spatial information enters each method. Pure drawing
+code, no data required, so it runs in any clone.
+
+```bash
+python methodology_figure.py
+```
 
 ### Optional — SRF ablation and sensitivity
 
