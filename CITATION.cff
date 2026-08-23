@@ -3,7 +3,7 @@ message: "If you use this software, please cite it as below."
 authors:
 - family-names: Fahiminia
   given-names: Mohammad
-orcid:  DOI: 10.5281/zenodo.22067693 
+DOI: 10.5281/zenodo.22067693 
 title: Spatial random forest 3D
 version: V1.0.0
 date-released: 2026-08-23
